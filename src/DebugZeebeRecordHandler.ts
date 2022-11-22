@@ -26,27 +26,40 @@ import {ZeebeRecord, ZeebeRecordHandlerInterface} from "@hauptmedia/zeebe-export
 
 export class DebugZeebeRecordHandler implements ZeebeRecordHandlerInterface {
   protected printBuffer: any = [];
-  protected printTimeout: any;
+  protected printTimer: any;
+
+  protected fields: string[] = [];
+  protected sampleRate: number;
+
+  /**
+   * This handler will collect records for a given time and print them out into a table on the console
+   * @param fields Fields from value object which should be included in the table
+   * @param sampleRate Sample rate in ms
+   */
+  constructor(fields: string[], sampleRate: number) {
+    this.fields = fields;
+    this.sampleRate = sampleRate;
+  }
 
   protected _prettyPrintTable() {
-      this.printTimeout = null;
+      this.printTimer = null;
       console.table(
         this.printBuffer,
-        ['valueType', 'bpmnElementType', 'elementId', 'intent', 'correlationKey', 'variables', 'decisionId', 'errorType', 'errorMessage']
+        ['recordType', 'valueType', 'intent', ...this.fields]
       );
       this.printBuffer.length = 0;
   }
 
   protected _prettyPrint(record: ZeebeRecord<ValueType>) {
-    this.printBuffer.push({
-      timestamp: record.timestamp,
+    this.printBuffer[record.timestamp] = {
+      recordType: record.recordType,
       valueType: record.valueType,
       intent: record.intent,
       ...record.value
-    });
+    };
 
-     if(!this.printTimeout)
-       this.printTimeout = setTimeout(this._prettyPrintTable.bind(this), 2000);
+     if(!this.printTimer)
+       this.printTimer = setTimeout(this._prettyPrintTable.bind(this), this.sampleRate);
   }
 
   decision(record: ZeebeRecord<DecisionRecordValue>): void {

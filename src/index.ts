@@ -3,14 +3,22 @@ import {DebugZeebeRecordHandler} from "./DebugZeebeRecordHandler";
 import {createZeebeRecordHandlerMap, ValueType, ZeebeRecord} from "@hauptmedia/zeebe-exporter-types";
 
 const kafka = new Kafka({
-    clientId: 'zeebe-connector',
+    clientId: 'zbcat',
     brokers: ['localhost:9093']
 })
 
-const zbRecordHandler = new DebugZeebeRecordHandler(),
+const fields = ['bpmnElementType', 'elementId', 'correlationKey', 'variables', 'decisionId', 'errorType', 'errorMessage'],
+    sampleRate = 2000;
+
+const zbRecordHandler = new DebugZeebeRecordHandler(fields, sampleRate),
     handlerMap = createZeebeRecordHandlerMap(zbRecordHandler);
 
-const consumer = kafka.consumer({groupId: 'zeebe-connector'})
+const consumer = kafka.consumer({groupId: 'zbcat'})
+
+process.on('SIGINT', () => {
+    consumer.disconnect().then(() => process.exit());
+});
+
 
 const run = async () => {
     await consumer.connect()
