@@ -1,6 +1,7 @@
 import {Kafka} from 'kafkajs';
 import {DebugZeebeRecordHandler} from "./DebugZeebeRecordHandler";
 import {createZeebeRecordHandlerMap, ValueType, ZeebeRecord} from "@hauptmedia/zeebe-exporter-types";
+import * as uuid from 'uuid';
 
 const kafka = new Kafka({
     clientId: 'zbcat',
@@ -13,7 +14,7 @@ const fields = ['bpmnElementType', 'elementId', 'correlationKey', 'variables', '
 const zbRecordHandler = new DebugZeebeRecordHandler(fields, sampleRate),
     handlerMap = createZeebeRecordHandlerMap(zbRecordHandler);
 
-const consumer = kafka.consumer({groupId: 'zbcat'})
+const consumer = kafka.consumer({groupId: uuid.v4()})
 
 process.on('SIGINT', () => {
     consumer.disconnect().then(() => process.exit());
