@@ -1,6 +1,6 @@
 import {Kafka} from 'kafkajs';
 import {DebugZeebeRecordHandler} from "./DebugZeebeRecordHandler";
-import {createZeebeRecordHandlerMap, ValueType, ZeebeRecord} from "@hauptmedia/zeebe-exporter-types";
+import {dispatchZeebeRecordToHandler, ValueType, ZeebeRecord} from "@hauptmedia/zeebe-exporter-types";
 import * as uuid from 'uuid';
 
 const kafka = new Kafka({
@@ -9,17 +9,13 @@ const kafka = new Kafka({
 })
 
 const fields = ['bpmnElementType', 'elementId', 'correlationKey', 'variables', 'decisionId', 'errorType', 'errorMessage'],
-    sampleRate = 2000;
-
-const zbRecordHandler = new DebugZeebeRecordHandler(fields, sampleRate),
-    handlerMap = createZeebeRecordHandlerMap(zbRecordHandler);
-
-const consumer = kafka.consumer({groupId: uuid.v4()})
+    sampleRate = 2000,
+    zbRecordHandler = new DebugZeebeRecordHandler(fields, sampleRate),
+    consumer = kafka.consumer({groupId: uuid.v4()})
 
 process.on('SIGINT', () => {
     consumer.disconnect().then(() => process.exit());
 });
-
 
 const run = async () => {
     await consumer.connect()
@@ -30,13 +26,10 @@ const run = async () => {
             if (!message.value)
                 return;
 
-            const payloadAsString = message.value.toString(),
-                zbRecord = JSON.parse(payloadAsString) as ZeebeRecord<ValueType>;
-
-            if(zbRecord.valueType in handlerMap)
-                handlerMap[zbRecord.valueType].apply(zbRecordHandler, [zbRecord]);
-            else
-                console.error(`Ignoring unknown zeebe valueType ${zbRecord.valueType}`);
+            dispatchZeebeRecordToHandler(
+                JSON.parse(message.value.toString()) as ZeebeRecord<ValueType>,
+                zbRecordHandler
+            );
         },
     })
 }

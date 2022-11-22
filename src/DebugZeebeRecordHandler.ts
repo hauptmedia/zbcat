@@ -45,18 +45,19 @@ export class DebugZeebeRecordHandler implements ZeebeRecordHandlerInterface {
       this.printTimer = null;
       console.table(
         this.printBuffer,
-        ['recordType', 'valueType', 'intent', ...this.fields]
+        ['timestamp', 'recordType', 'valueType', 'intent', ...this.fields]
       );
-      this.printBuffer.length = 0;
+      this.printBuffer = [];
   }
 
   protected _prettyPrint(record: ZeebeRecord<ValueType>) {
-    this.printBuffer[record.timestamp] = {
+    this.printBuffer.push({
+      timestamp: new Date(record.timestamp).toISOString(),
       recordType: record.recordType,
       valueType: record.valueType,
       intent: record.intent,
       ...record.value
-    };
+    });
 
      if(!this.printTimer)
        this.printTimer = setTimeout(this._prettyPrintTable.bind(this), this.sampleRate);
