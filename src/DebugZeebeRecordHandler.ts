@@ -47,7 +47,7 @@ export class DebugZeebeRecordHandler implements ZeebeRecordHandlerInterface {
         this.printBuffer,
         ['timestamp', 'recordType', 'valueType', 'intent', ...this.fields]
       );
-      this.printBuffer = [];
+      this.printBuffer.length = 0;
   }
 
   protected _prettyPrint(record: ZeebeRecord<ValueType>) {
