@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@hauptmedia/zeebe-exporter-types": "^1.0.1",
+    "commander": "^9.4.1",
     "kafkajs": "^2.2.3",
     "uuid": "^9.0.0"
   }
