@@ -1,3 +1,7 @@
+# Usage
+
+![Usage](http://g.recordit.co/CBiIK3mvqb.gif)
+
 # Installation
 
 ## Using npx
