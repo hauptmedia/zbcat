@@ -1,5 +1,5 @@
 import {Kafka} from 'kafkajs';
-import {DebugZeebeRecordHandler} from "./DebugZeebeRecordHandler";
+import {TablePrintRecordHandler} from "./TablePrintRecordHandler";
 import {dispatchZeebeRecordToHandler, ValueType, ZeebeRecord} from "@hauptmedia/zeebe-exporter-types";
 import * as uuid from 'uuid';
 
@@ -10,7 +10,7 @@ const kafka = new Kafka({
 
 const fields = ['bpmnElementType', 'elementId', 'correlationKey', 'variables', 'decisionId', 'errorType', 'errorMessage'],
     sampleRate = 2000,
-    zbRecordHandler = new DebugZeebeRecordHandler(fields, sampleRate),
+    zbRecordHandler = new TablePrintRecordHandler(fields, sampleRate),
     consumer = kafka.consumer({groupId: uuid.v4()})
 
 process.on('SIGINT', () => {

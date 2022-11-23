@@ -24,12 +24,12 @@ import {
 } from "@hauptmedia/zeebe-exporter-types";
 import {ZeebeRecord, ZeebeRecordHandlerInterface} from "@hauptmedia/zeebe-exporter-types";
 
-export class DebugZeebeRecordHandler implements ZeebeRecordHandlerInterface {
-  protected printBuffer: any = [];
-  protected printTimer: any;
+export class TablePrintRecordHandler implements ZeebeRecordHandlerInterface {
+  protected _buffer: any = [];
+  protected _timer: any;
 
-  protected fields: string[] = [];
-  protected sampleRate: number;
+  protected _fields: string[] = [];
+  protected _sampleRate: number;
 
   /**
    * This handler will collect records for a given time and print them out into a table on the console
@@ -37,21 +37,21 @@ export class DebugZeebeRecordHandler implements ZeebeRecordHandlerInterface {
    * @param sampleRate Sample rate in ms
    */
   constructor(fields: string[], sampleRate: number) {
-    this.fields = fields;
-    this.sampleRate = sampleRate;
+    this._fields = fields;
+    this._sampleRate = sampleRate;
   }
 
   protected _prettyPrintTable() {
-      this.printTimer = null;
+      this._timer = null;
       console.table(
-        this.printBuffer,
-        ['timestamp', 'recordType', 'valueType', 'intent', ...this.fields]
+        this._buffer,
+        ['timestamp', 'recordType', 'valueType', 'intent', ...this._fields]
       );
-      this.printBuffer.length = 0;
+      this._buffer.length = 0;
   }
 
   protected _prettyPrint(record: ZeebeRecord<ValueType>) {
-    this.printBuffer.push({
+    this._buffer.push({
       timestamp: new Date(record.timestamp).toISOString(),
       recordType: record.recordType,
       valueType: record.valueType,
@@ -59,8 +59,8 @@ export class DebugZeebeRecordHandler implements ZeebeRecordHandlerInterface {
       ...record.value
     });
 
-     if(!this.printTimer)
-       this.printTimer = setTimeout(this._prettyPrintTable.bind(this), this.sampleRate);
+     if(!this._timer)
+       this._timer = setTimeout(this._prettyPrintTable.bind(this), this._sampleRate);
   }
 
   decision(record: ZeebeRecord<DecisionRecordValue>): void {
