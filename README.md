@@ -2,7 +2,7 @@ zbcat: Command line viewer for Zeebe events
 ===========================================
 ![Compatible with: Camunda Platform 8](https://img.shields.io/badge/Compatible%20with-Camunda%20Platform%208-0072Ce)
 
-Connects to Zeebe events Kafka export which can be produced with [zeebe-kafka-exporter](https://github.com/camunda-community-hub/zeebe-kafka-exporter).
+Displays Zeebe events from Kafka export which can be produced with [zeebe-kafka-exporter](https://github.com/camunda-community-hub/zeebe-kafka-exporter).
 
 ## Usage
 
