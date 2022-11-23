@@ -5,32 +5,37 @@ import * as uuid from 'uuid';
 import { Command } from 'commander';
 
 const program = new Command()
-    .option('--fields <fields>')
-    .option('--sample-rate <sample_rate>')
-    .option('--from-beginning')
-    .option('--kafka-brokers <broker_list>')
-    .option('--kafka-client-id <kafka_client_id>')
-    .option('--kafka-group-id <kafka_group_id>')
-    .option('--kafka-topics <kafka_topics>');
+    .description('Command line viewer for events produced by the Zeebe Workflow Automation Engine')
+    .option(
+        '--fields <fields>',
+        'comma seperated list of fields from the record value which should be included',
+        'bpmnElementType,elementId,correlationKey,variables,decisionId,errorType,errorMessage'
+    )
+    .option('--sample-rate <sample_rate>', 'sample rate in ms', "2000")
+    .option('--from-beginning', 'reprocess all available events from the beginning', false)
+    .option('--kafka-brokers <broker_list>', 'comma seperated list of kafka brokers', 'localhost:9092')
+    .option('--kafka-client-id <kafka_client_id>', 'kafka client id', 'zbcat')
+    .option('--kafka-group-id <kafka_group_id>', 'kafka group id, will randomly generated if not specified', uuid.v4())
+    .option('--kafka-topics <kafka_topics>', 'comma seperated list of kafka topics to subsribe to', 'zeebe');
 
 
 program.parse();
 const options = program.opts();
 
 const
-    fields = options['fields'] || process.env.ZBCAT_FIELDS || 'bpmnElementType,elementId,correlationKey,variables,decisionId,errorType,errorMessage',
-    sampleRate = options['sampleRate'] || process.env.ZBCAT_SAMPLE_RATE || 2000,
-    kafkaFromBeginning = options['fromBeginning'] || process.env.ZBCAT_KAFKA_FROM_BEGINNING || false,
-    kafkaBrokers = options['kafkaBrokers'] || process.env.ZBCAT_KAFKA_BROKERS || 'localhost:9092',
-    kafkaClientId = options['kafkaClientId'] || process.env.ZBCAT_KAFKA_CLIENT_ID || 'zbcat',
-    kafkaGroupId = options['kafkaGroupId'] || process.env.ZBCAT_KAFKA_GROUP_ID || uuid.v4(),
-    kafkaTopics = options['kafkaTopics'] || process.env.ZBCAT_KAFKA_TOPICS || 'zeebe';
+    fields = options['fields'].split(","),
+    sampleRate = parseInt(options['sampleRate'], 10),
+    kafkaFromBeginning = options['fromBeginning'],
+    kafkaBrokers = options['kafkaBrokers'].split(","),
+    kafkaClientId = options['kafkaClientId'],
+    kafkaGroupId = options['kafkaGroupId'],
+    kafkaTopics = options['kafkaTopics'].split(",");
 
 const kafka = new Kafka({
         clientId: kafkaClientId,
-        brokers: kafkaBrokers.split(",")
+        brokers: kafkaBrokers
     }),
-    zbRecordHandler = new TablePrintRecordHandler(fields.split(","), parseInt(sampleRate, 10)),
+    zbRecordHandler = new TablePrintRecordHandler(fields, sampleRate),
     consumer = kafka.consumer({groupId: kafkaGroupId})
 
 process.on('SIGINT', () => {
@@ -40,8 +45,8 @@ process.on('SIGINT', () => {
 const run = async () => {
     await consumer.connect()
     await consumer.subscribe({
-        topics: kafkaTopics.split(","),
-        fromBeginning: !!kafkaFromBeginning
+        topics: kafkaTopics,
+        fromBeginning: kafkaFromBeginning
     })
 
     await consumer.run({
