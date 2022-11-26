@@ -20,8 +20,8 @@ const program = new Command()
     .option('--kafka-client-id <kafka_client_id>', 'kafka client id', 'zbcat')
     .option('--kafka-group-id <kafka_group_id>', 'kafka group id, will randomly generated if not specified', uuid.v4())
     .option('--kafka-topics <kafka_topics>', 'comma seperated list of kafka topics to subscribe to', 'zeebe')
-    .option('--hazelcast', 'use hazelcast subscription', false);
-
+    .option('--hazelcast', 'use hazelcast subscription', false)
+    .option('--hazelcast-ringbuffer-name', 'name of ringbuffer used in hazelcast', 'zeebe');
 
 program.parse();
 const options = program.opts();
@@ -36,7 +36,8 @@ let subscriber: SubscriberInterface;
 
 if(options['hazelcast']) {
     subscriber = new HazelcastSubscriber({
-        fromBeginning: options['fromBeginning']
+        fromBeginning: options['fromBeginning'],
+        ringbufferName: options['hazelcastRingbufferName']
     });
 
 } else {
