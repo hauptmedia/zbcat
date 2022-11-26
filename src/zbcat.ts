@@ -38,8 +38,6 @@ const
 
 let subscriber: SubscriberInterface;
 
-console.log(options['hazelcastClusterMembers']);
-
 if(options['hazelcast']) {
     subscriber = new HazelcastSubscriber({
         fromBeginning: options['fromBeginning'],
