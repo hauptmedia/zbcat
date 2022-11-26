@@ -6,6 +6,8 @@ import {SubscriberInterface} from "./SubscriberInterface";
 type HazelcastOptions = {
     fromBeginning: boolean
     ringbufferName: string
+    clusterName: string
+    clusterMembers: string[]
 }
 
 export class HazelcastSubscriber implements SubscriberInterface {
@@ -20,7 +22,12 @@ export class HazelcastSubscriber implements SubscriberInterface {
     }
 
     async connect() {
-        this.client = await Client.newHazelcastClient();
+        this.client = await Client.newHazelcastClient({
+            clusterName: this.options.clusterName,
+            network: {
+                clusterMembers: this.options.clusterMembers
+            }
+        });
         this.ringbuffer = await this.client.getRingbuffer<string>(this.options.ringbufferName);
     }
 
