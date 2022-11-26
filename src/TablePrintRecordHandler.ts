@@ -45,7 +45,7 @@ export class TablePrintRecordHandler implements ZeebeRecordHandlerInterface {
       this._timer = null;
       console.table(
         this._buffer,
-        ['timestamp', 'recordType', 'valueType', 'intent', ...this._fields]
+        ['timestamp', 'valueType', 'intent', ...this._fields]
       );
       this._buffer.length = 0;
   }
