@@ -1,8 +1,10 @@
-import {Kafka} from 'kafkajs';
 import {TablePrintRecordHandler} from "./TablePrintRecordHandler";
 import {dispatchZeebeRecordToHandler, ValueType, ZeebeRecord} from "@hauptmedia/zeebe-exporter-types";
 import * as uuid from 'uuid';
 import { Command } from 'commander';
+import {KafkaSubscriber} from "./KafkaSubscriber";
+import {HazelcastSubscriber} from "./HazelcastSubscriber";
+import {SubscriberInterface} from "./SubscriberInterface";
 
 const program = new Command()
     .description('Command line viewer for events produced by the Zeebe Workflow Automation Engine')
@@ -13,10 +15,12 @@ const program = new Command()
     )
     .option('--sample-rate <sample_rate>', 'sample rate in ms', "2000")
     .option('--from-beginning', 'reprocess all available events from the beginning', false)
+    .option('--kafka', 'use kafka subscription', true)
     .option('--kafka-brokers <broker_list>', 'comma seperated list of kafka brokers', 'localhost:9092')
     .option('--kafka-client-id <kafka_client_id>', 'kafka client id', 'zbcat')
     .option('--kafka-group-id <kafka_group_id>', 'kafka group id, will randomly generated if not specified', uuid.v4())
-    .option('--kafka-topics <kafka_topics>', 'comma seperated list of kafka topics to subscribe to', 'zeebe');
+    .option('--kafka-topics <kafka_topics>', 'comma seperated list of kafka topics to subscribe to', 'zeebe')
+    .option('--hazelcast', 'use hazelcast subscription', false);
 
 
 program.parse();
@@ -25,41 +29,40 @@ const options = program.opts();
 const
     fields = options['fields'].split(","),
     sampleRate = parseInt(options['sampleRate'], 10),
-    kafkaFromBeginning = options['fromBeginning'],
-    kafkaBrokers = options['kafkaBrokers'].split(","),
-    kafkaClientId = options['kafkaClientId'],
-    kafkaGroupId = options['kafkaGroupId'],
-    kafkaTopics = options['kafkaTopics'].split(",");
+    zbRecordHandler = new TablePrintRecordHandler(fields, sampleRate);
 
-const kafka = new Kafka({
-        clientId: kafkaClientId,
-        brokers: kafkaBrokers
-    }),
-    zbRecordHandler = new TablePrintRecordHandler(fields, sampleRate),
-    consumer = kafka.consumer({groupId: kafkaGroupId})
+
+let subscriber: SubscriberInterface;
+
+if(options['hazelcast']) {
+    subscriber = new HazelcastSubscriber();
+
+} else {
+    subscriber = new KafkaSubscriber({
+        brokers: options['kafkaBrokers'].split(","),
+        clientId: options['kafkaClientId'],
+        groupId: options['kafkaGroupId'],
+        topics: options['kafkaTopics'].split(","),
+        fromBeginning: options['fromBeginning']
+    });
+}
+
 
 process.on('SIGINT', () => {
-    consumer.disconnect().then(() => process.exit(0));
+    subscriber.disconnect().then(() =>  process.exit(0));
 });
 
+
 const run = async () => {
-    await consumer.connect()
-    await consumer.subscribe({
-        topics: kafkaTopics,
-        fromBeginning: kafkaFromBeginning
-    })
+    await subscriber.connect();
 
-    await consumer.run({
-        eachMessage: async ({topic, partition, message, heartbeat, pause}) => {
-            if (!message.value)
-                return;
+    subscriber.run((data) => {
+        dispatchZeebeRecordToHandler(
+            JSON.parse(data) as ZeebeRecord<ValueType>,
+            zbRecordHandler
+        );
+    });
 
-            dispatchZeebeRecordToHandler(
-                JSON.parse(message.value.toString()) as ZeebeRecord<ValueType>,
-                zbRecordHandler
-            );
-        },
-    })
 }
 
 run().catch((e) => {
