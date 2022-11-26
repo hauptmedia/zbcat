@@ -39,7 +39,7 @@ const kafka = new Kafka({
     consumer = kafka.consumer({groupId: kafkaGroupId})
 
 process.on('SIGINT', () => {
-    consumer.disconnect().then(() => process.exit());
+    consumer.disconnect().then(() => process.exit(0));
 });
 
 const run = async () => {
@@ -62,5 +62,8 @@ const run = async () => {
     })
 }
 
-run().catch(console.error)
+run().catch((e) => {
+    console.error(e);
+    process.exit(1);
+})
 
