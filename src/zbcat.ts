@@ -16,7 +16,7 @@ const program = new Command()
     .option('--kafka-brokers <broker_list>', 'comma seperated list of kafka brokers', 'localhost:9092')
     .option('--kafka-client-id <kafka_client_id>', 'kafka client id', 'zbcat')
     .option('--kafka-group-id <kafka_group_id>', 'kafka group id, will randomly generated if not specified', uuid.v4())
-    .option('--kafka-topics <kafka_topics>', 'comma seperated list of kafka topics to subsribe to', 'zeebe');
+    .option('--kafka-topics <kafka_topics>', 'comma seperated list of kafka topics to subscribe to', 'zeebe');
 
 
 program.parse();
