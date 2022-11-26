@@ -27,15 +27,22 @@ export class HazelcastSubscriber implements SubscriberInterface {
         if(this.ringbuffer === null)
             throw "Not connected";
 
-        let sequence = this.options.fromBeginning ? await this.ringbuffer.headSequence() : await this.ringbuffer.tailSequence();
+        let sequence;
+
+        if(this.options.fromBeginning) {
+            sequence = await this.ringbuffer.headSequence();
+        } else {
+            sequence = await this.ringbuffer.tailSequence();
+            sequence = sequence.add(1);
+        }
 
         while(true){
-            sequence = sequence.add(1);
-
             // readOne blocks if no item is available
             const value = await this.ringbuffer.readOne(sequence);
             if(value)
                 fn(value.toString());
+
+            sequence = sequence.add(1);
         }
     }
 
