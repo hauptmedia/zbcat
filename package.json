@@ -1,6 +1,6 @@
 {
   "name": "@hauptmedia/zbcat",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Command line viewer for events produced by the Zeebe Workflow Automation Engine.",
   "author": {
     "name": "Julian Haupt",
