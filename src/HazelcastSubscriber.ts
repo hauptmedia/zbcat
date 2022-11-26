@@ -3,7 +3,7 @@ import {Ringbuffer} from "hazelcast-client/lib/proxy";
 import {HazelcastClient} from "hazelcast-client/lib/HazelcastClient";
 import {SubscriberInterface} from "./SubscriberInterface";
 
-type HazelcastOptions = {
+type HazelcastSubscriberOptions = {
     fromBeginning: boolean
     ringbufferName: string
     clusterName: string
@@ -15,9 +15,9 @@ export class HazelcastSubscriber implements SubscriberInterface {
 
     protected ringbuffer: Ringbuffer<string> | null = null;
 
-    protected options: HazelcastOptions;
+    protected options: HazelcastSubscriberOptions;
 
-    constructor(options: HazelcastOptions) {
+    constructor(options: HazelcastSubscriberOptions) {
         this.options = options;
     }
 

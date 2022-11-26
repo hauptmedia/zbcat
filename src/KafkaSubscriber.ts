@@ -1,7 +1,7 @@
 import {Consumer, Kafka} from "kafkajs";
 import {SubscriberInterface} from "./SubscriberInterface";
 
-type KafkaSubcriberOptions = {
+type KafkaSubscriberOptions = {
     clientId: string,
     groupId: string,
     brokers: string[],
@@ -11,9 +11,9 @@ type KafkaSubcriberOptions = {
 export class KafkaSubscriber implements SubscriberInterface {
     protected kafka: Kafka | null = null;
     protected consumer: Consumer | null = null;
-    protected options: KafkaSubcriberOptions;
+    protected options: KafkaSubscriberOptions;
 
-    constructor(options: KafkaSubcriberOptions) {
+    constructor(options: KafkaSubscriberOptions) {
         this.options = options;
     }
 
