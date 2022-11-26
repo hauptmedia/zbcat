@@ -16,13 +16,13 @@ const program = new Command()
     .option('--sample-rate <sample_rate>', 'sample rate in ms', "2000")
     .option('--from-beginning', 'reprocess all available events from the beginning', false)
 
-    .option('--kafka', 'use kafka subscription', true)
+    .option('--kafka', 'use kafka', true)
     .option('--kafka-brokers <broker_list>', 'comma seperated list of kafka brokers', 'localhost:9092')
     .option('--kafka-client-id <kafka_client_id>', 'kafka client id', 'zbcat')
     .option('--kafka-group-id <kafka_group_id>', 'kafka group id, will randomly generated if not specified', uuid.v4())
     .option('--kafka-topics <kafka_topics>', 'comma seperated list of kafka topics to subscribe to', 'zeebe')
 
-    .option('--hazelcast', 'use hazelcast subscription', false)
+    .option('--hazelcast', 'use hazelcast', false)
     .option('--hazelcast-ringbuffer-name <hazelcast_ringbuffer_name>', 'name of ringbuffer used in hazelcast', 'zeebe')
     .option('--hazelcast-cluster-name <hazelcast_cluster_name>', 'name of cluster used in hazelcast', 'dev')
     .option('--hazelcast-cluster-members <hazelcast_cluster_members>', 'comma seperated list of hazelcast cluster members', 'localhost:5701');
