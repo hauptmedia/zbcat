@@ -35,7 +35,9 @@ const
 let subscriber: SubscriberInterface;
 
 if(options['hazelcast']) {
-    subscriber = new HazelcastSubscriber();
+    subscriber = new HazelcastSubscriber({
+        fromBeginning: options['fromBeginning']
+    });
 
 } else {
     subscriber = new KafkaSubscriber({
